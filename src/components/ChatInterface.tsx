@@ -55,13 +55,13 @@ export const ChatInterface = ({ mode, isKeySet }: ChatInterfaceProps) => {
     try {
       const systemPrompt = getSystemPrompt(mode);
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      const requestOptions = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${storedKey}`,
+          "Authorization": `Bearer ${storedKey}`,
         },
         body: JSON.stringify({
           model: "gpt-4",
@@ -72,8 +72,15 @@ export const ChatInterface = ({ mode, isKeySet }: ChatInterfaceProps) => {
           temperature: 0.7,
         }),
         signal: controller.signal,
+      };
+
+      // Add credentials and mode to handle CORS
+      Object.assign(requestOptions, {
+        mode: 'cors' as RequestMode,
+        credentials: 'omit' as RequestCredentials,
       });
 
+      const response = await fetch("https://api.openai.com/v1/chat/completions", requestOptions);
       clearTimeout(timeoutId);
 
       if (!response.ok) {
@@ -100,7 +107,7 @@ export const ChatInterface = ({ mode, isKeySet }: ChatInterfaceProps) => {
       let errorMessage = "Failed to get response from OpenAI";
       
       if (error instanceof TypeError && error.message === "Failed to fetch") {
-        errorMessage = "Network error. Please check your internet connection and try again.";
+        errorMessage = "Network error. Please check your internet connection and try again. If you're using an ad blocker or privacy extension, try disabling it for this site.";
       } else if (error instanceof DOMException && error.name === "AbortError") {
         errorMessage = "Request timed out. Please try again.";
       } else if (error instanceof Error) {
