@@ -91,9 +91,124 @@ class DataProcessor:
             
         return self.table_data
 
-# Define queries (keeping your existing queries dictionary)
+# Define queries
 queries = {
-    # ... keep existing code (your queries dictionary)
+    "total_incidents": "SELECT COUNT(*) FROM incident_data",
+    "incidents_caused_by_change": "SELECT COUNT(*) FROM incident_data WHERE caused_by IS NOT NULL AND caused_by <> ''",
+    "incidents_with_mcis": "SELECT COUNT(*) FROM incident_data WHERE major_incident_state = 'accepted'",
+    "incidents_with_problems": "SELECT COUNT(*) FROM incident_data WHERE problem_id IS NOT NULL AND caused_by <> ''",
+    "incidents_by_major_incident_state": """
+        SELECT 
+            major_incident_state,
+            month_year,
+            COUNT(*) as count
+        FROM (
+            SELECT 
+                major_incident_state,
+                TO_CHAR(sys_created_on, 'MM/YYYY') as month_year
+            FROM incident_data
+            WHERE major_incident_state IS NOT NULL AND major_incident_state <> ''
+        ) subquery
+        GROUP BY major_incident_state, month_year
+        ORDER BY major_incident_state, TO_DATE(month_year, 'MM/YYYY')
+    """,
+    "incidents_by_state": """
+        SELECT 
+            incident_state,
+            month_year,
+            COUNT(*) as count
+        FROM (
+            SELECT 
+                incident_state,
+                TO_CHAR(sys_created_on, 'MM/YYYY') as month_year
+            FROM incident_data
+        ) subquery
+        GROUP BY incident_state, month_year
+        ORDER BY incident_state, TO_DATE(month_year, 'MM/YYYY')
+    """,
+    "incidents_by_made_sla": """
+        SELECT 
+            made_sla,
+            month_year,
+            COUNT(*) as count
+        FROM (
+            SELECT 
+                made_sla,
+                TO_CHAR(sys_created_on, 'MM/YYYY') as month_year
+            FROM incident_data
+        ) subquery
+        GROUP BY made_sla, month_year
+        ORDER BY made_sla, TO_DATE(month_year, 'MM/YYYY')
+    """,
+    "incidents_by_portfolio": """
+        SELECT 
+            portfolio,
+            month_year,
+            COUNT(*) as count
+        FROM (
+            SELECT 
+                portfolio,
+                TO_CHAR(sys_created_on, 'MM/YYYY') as month_year
+            FROM incident_data
+        ) subquery
+        GROUP BY portfolio, month_year
+        ORDER BY portfolio, TO_DATE(month_year, 'MM/YYYY')
+    """,
+    "incidents_by_severity": """
+        SELECT 
+            severity,
+            month_year,
+            COUNT(*) as count
+        FROM (
+            SELECT 
+                severity,
+                TO_CHAR(sys_created_on, 'MM/YYYY') as month_year
+            FROM incident_data
+        ) subquery
+        GROUP BY severity, month_year
+        ORDER BY severity, TO_DATE(month_year, 'MM/YYYY')
+    """,
+    "incidents_by_priority": """
+        SELECT 
+            priority,
+            month_year,
+            COUNT(*) as count
+        FROM (
+            SELECT 
+                priority,
+                TO_CHAR(sys_created_on, 'MM/YYYY') as month_year
+            FROM incident_data
+        ) subquery
+        GROUP BY priority, month_year
+        ORDER BY priority, TO_DATE(month_year, 'MM/YYYY')
+    """,
+    "enterprise": """
+        SELECT TO_CHAR(sys_created_on, 'MM/YYYY') as month_year, COUNT(*)
+        FROM incident_data
+        GROUP BY TO_CHAR(sys_created_on, 'MM/YYYY')
+        ORDER BY TO_DATE(TO_CHAR(sys_created_on, 'MM/YYYY'), 'MM/YYYY')
+    """,
+    "enterprise_caused_by": """
+        SELECT TO_CHAR(sys_created_on, 'MM/YYYY') as month_year, COUNT(*)
+        FROM incident_data
+        WHERE caused_by IS NOT NULL AND caused_by <> ''
+        GROUP BY TO_CHAR(sys_created_on, 'MM/YYYY')
+        ORDER BY TO_DATE(TO_CHAR(sys_created_on, 'MM/YYYY'), 'MM/YYYY')
+    """,
+    "enterprise_mcis": """
+        SELECT TO_CHAR(sys_created_on, 'MM/YYYY') as month_year, COUNT(*)
+        FROM incident_data
+        WHERE major_incident_state = 'accepted'
+        GROUP BY TO_CHAR(sys_created_on, 'MM/YYYY')
+        ORDER BY TO_DATE(TO_CHAR(sys_created_on, 'MM/YYYY'), 'MM/YYYY')
+    """,
+    "enterprise_problems": """
+        SELECT TO_CHAR(sys_created_on, 'MM/YYYY') as month_year, COUNT(*)
+        FROM incident_data
+        WHERE problem_id IS NOT NULL AND caused_by <> ''
+        GROUP BY TO_CHAR(sys_created_on, 'MM/YYYY')
+        ORDER BY TO_DATE(TO_CHAR(sys_created_on, 'MM/YYYY'), 'MM/YYYY')
+    """
 }
 
 # Process all queries and save results
