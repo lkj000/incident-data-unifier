@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { MessageSquare, Loader2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChatInterfaceProps {
   mode: string;
@@ -54,6 +54,9 @@ export const ChatInterface = ({ mode, isKeySet }: ChatInterfaceProps) => {
     setIsLoading(true);
     try {
       const systemPrompt = getSystemPrompt(mode);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -68,7 +71,10 @@ export const ChatInterface = ({ mode, isKeySet }: ChatInterfaceProps) => {
           ],
           temperature: 0.7,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -91,9 +97,19 @@ export const ChatInterface = ({ mode, isKeySet }: ChatInterfaceProps) => {
       setResponse(data.choices[0].message.content);
     } catch (error) {
       console.error("OpenAI API Error:", error);
+      let errorMessage = "Failed to get response from OpenAI";
+      
+      if (error instanceof TypeError && error.message === "Failed to fetch") {
+        errorMessage = "Network error. Please check your internet connection and try again.";
+      } else if (error instanceof DOMException && error.name === "AbortError") {
+        errorMessage = "Request timed out. Please try again.";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to get response from OpenAI",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
