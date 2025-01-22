@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,14 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Card } from "@/components/ui/card";
-import { MessageSquare, Upload, Loader2 } from "lucide-react";
+import { MessageSquare, Upload, Loader2, Key } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const Index = () => {
   const [message, setMessage] = useState("");
@@ -19,7 +26,16 @@ const Index = () => {
   const [mode, setMode] = useState("chat");
   const [isLoading, setIsLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [apiKey, setApiKey] = useState("");
+  const [isKeySet, setIsKeySet] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const storedKey = localStorage.getItem("openai_api_key");
+    if (storedKey) {
+      setIsKeySet(true);
+    }
+  }, []);
 
   const handleModeChange = (value: string) => {
     setMode(value);
@@ -50,11 +66,33 @@ const Index = () => {
     }
   };
 
+  const handleApiKeySubmit = () => {
+    if (apiKey.trim()) {
+      localStorage.setItem("openai_api_key", apiKey.trim());
+      setIsKeySet(true);
+      setApiKey("");
+      toast({
+        title: "API Key Saved",
+        description: "Your OpenAI API key has been securely saved",
+      });
+    }
+  };
+
   const handleSubmit = async () => {
     if (!message.trim()) {
       toast({
         title: "Empty message",
         description: "Please enter a message",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const storedKey = localStorage.getItem("openai_api_key");
+    if (!storedKey) {
+      toast({
+        title: "API Key Required",
+        description: "Please set your OpenAI API key first",
         variant: "destructive",
       });
       return;
@@ -67,7 +105,7 @@ const Index = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${storedKey}`,
         },
         body: JSON.stringify({
           model: "gpt-4",
@@ -116,6 +154,33 @@ const Index = () => {
       <h1 className="text-4xl font-bold mb-8 text-center">AI Assistant</h1>
       
       <div className="space-y-4">
+        {!isKeySet && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="w-full">
+                <Key className="h-4 w-4 mr-2" />
+                Set OpenAI API Key
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Enter your OpenAI API Key</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Input
+                  type="password"
+                  placeholder="sk-..."
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                />
+                <Button onClick={handleApiKeySubmit} className="w-full">
+                  Save API Key
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
         <Select value={mode} onValueChange={handleModeChange}>
           <SelectTrigger>
             <SelectValue placeholder="Select mode" />
@@ -152,7 +217,7 @@ const Index = () => {
 
         <Button
           onClick={handleSubmit}
-          disabled={isLoading}
+          disabled={isLoading || !isKeySet}
           className="w-full"
         >
           {isLoading ? (
