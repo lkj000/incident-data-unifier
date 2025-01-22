@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
-import { MessageSquare, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { sendChatMessage } from "@/utils/openai";
+import { ChatInput } from "./ChatInput";
+import { ChatResponse } from "./ChatResponse";
 
 interface ChatInterfaceProps {
   mode: string;
@@ -95,32 +93,14 @@ export const ChatInterface = ({ mode, isKeySet }: ChatInterfaceProps) => {
 
   return (
     <div className="space-y-4">
-      <Textarea
-        placeholder="Enter your message..."
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        className="min-h-[100px]"
+      <ChatInput
+        message={message}
+        isLoading={isLoading}
+        isKeySet={isKeySet}
+        onMessageChange={setMessage}
+        onSubmit={handleSubmit}
       />
-
-      <Button
-        onClick={handleSubmit}
-        disabled={isLoading || !isKeySet}
-        className="w-full"
-      >
-        {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-        ) : (
-          <MessageSquare className="h-4 w-4 mr-2" />
-        )}
-        {isLoading ? "Processing..." : "Send Message"}
-      </Button>
-
-      {response && (
-        <Card className="p-4 mt-4">
-          <h2 className="font-semibold mb-2">Response:</h2>
-          <div className="whitespace-pre-wrap">{response}</div>
-        </Card>
-      )}
+      <ChatResponse response={response} />
     </div>
   );
 };
