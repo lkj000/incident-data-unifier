@@ -74,12 +74,6 @@ export const ChatInterface = ({ mode, isKeySet }: ChatInterfaceProps) => {
         signal: controller.signal,
       };
 
-      // Add credentials and mode to handle CORS
-      Object.assign(requestOptions, {
-        mode: 'cors' as RequestMode,
-        credentials: 'omit' as RequestCredentials,
-      });
-
       const response = await fetch("https://api.openai.com/v1/chat/completions", requestOptions);
       clearTimeout(timeoutId);
 
