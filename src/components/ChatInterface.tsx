@@ -4,32 +4,33 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { MessageSquare, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { sendChatMessage } from "@/utils/openai";
 
 interface ChatInterfaceProps {
   mode: string;
   isKeySet: boolean;
 }
 
+const getSystemPrompt = (mode: string) => {
+  switch (mode) {
+    case "email":
+      return "You are a helpful assistant that helps write professional emails. Format the response properly and maintain a professional tone.";
+    case "translate":
+      return "You are a translation assistant. Detect the source language and translate the text to English. If the text is in English, ask which language to translate to.";
+    case "interview":
+      return "You are an interview preparation assistant. Provide detailed feedback and suggestions for improvement.";
+    case "summarize":
+      return "You are a summarization assistant. Provide a concise summary of the text while maintaining all key points.";
+    default:
+      return "You are a helpful assistant. Provide clear and concise responses.";
+  }
+};
+
 export const ChatInterface = ({ mode, isKeySet }: ChatInterfaceProps) => {
   const [message, setMessage] = useState("");
   const [response, setResponse] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
-  const getSystemPrompt = (mode: string) => {
-    switch (mode) {
-      case "email":
-        return "You are a helpful assistant that helps write professional emails. Format the response properly and maintain a professional tone.";
-      case "translate":
-        return "You are a translation assistant. Detect the source language and translate the text to English. If the text is in English, ask which language to translate to.";
-      case "interview":
-        return "You are an interview preparation assistant. Provide detailed feedback and suggestions for improvement.";
-      case "summarize":
-        return "You are a summarization assistant. Provide a concise summary of the text while maintaining all key points.";
-      default:
-        return "You are a helpful assistant. Provide clear and concise responses.";
-    }
-  };
 
   const handleSubmit = async () => {
     if (!message.trim()) {
@@ -52,50 +53,18 @@ export const ChatInterface = ({ mode, isKeySet }: ChatInterfaceProps) => {
     }
 
     setIsLoading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     try {
       const systemPrompt = getSystemPrompt(mode);
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-      const requestOptions = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${storedKey}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: message },
-          ],
-          temperature: 0.7,
-        }),
-        signal: controller.signal,
-      };
-
-      const response = await fetch("https://api.openai.com/v1/chat/completions", requestOptions);
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        let errorMessage = "Failed to get response from OpenAI";
-        
-        if (response.status === 401) {
-          errorMessage = "Invalid API key. Please check your OpenAI API key and try again.";
-          localStorage.removeItem("openai_api_key");
-          window.location.reload();
-        } else if (response.status === 429) {
-          errorMessage = "Rate limit exceeded. Please try again in a few moments.";
-        } else if (errorData.error?.message) {
-          errorMessage = errorData.error.message;
-        }
-        
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
-      setResponse(data.choices[0].message.content);
+      const responseContent = await sendChatMessage(
+        storedKey,
+        systemPrompt,
+        message,
+        controller.signal
+      );
+      setResponse(responseContent);
     } catch (error) {
       console.error("OpenAI API Error:", error);
       let errorMessage = "Failed to get response from OpenAI";
@@ -113,7 +82,13 @@ export const ChatInterface = ({ mode, isKeySet }: ChatInterfaceProps) => {
         description: errorMessage,
         variant: "destructive",
       });
+
+      if (errorMessage.includes("Invalid API key")) {
+        localStorage.removeItem("openai_api_key");
+        window.location.reload();
+      }
     } finally {
+      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
