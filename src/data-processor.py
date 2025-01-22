@@ -102,7 +102,7 @@ queries = {
         FROM (
             SELECT 
                 major_incident_state,
-                TO_CHAR(sys_created_on, 'MM/YYYY') as month_year
+                TO_CHAR(created, 'MM/YYYY') as month_year
             FROM incident_data
             WHERE major_incident_state IS NOT NULL AND major_incident_state <> ''
         ) subquery
@@ -117,7 +117,7 @@ queries = {
         FROM (
             SELECT 
                 incident_state,
-                TO_CHAR(sys_created_on, 'MM/YYYY') as month_year
+                TO_CHAR(created, 'MM/YYYY') as month_year
             FROM incident_data
         ) subquery
         GROUP BY incident_state, month_year
@@ -131,7 +131,7 @@ queries = {
         FROM (
             SELECT 
                 made_sla,
-                TO_CHAR(sys_created_on, 'MM/YYYY') as month_year
+                TO_CHAR(created, 'MM/YYYY') as month_year
             FROM incident_data
         ) subquery
         GROUP BY made_sla, month_year
@@ -145,7 +145,7 @@ queries = {
         FROM (
             SELECT 
                 portfolio,
-                TO_CHAR(sys_created_on, 'MM/YYYY') as month_year
+                TO_CHAR(created, 'MM/YYYY') as month_year
             FROM incident_data
         ) subquery
         GROUP BY portfolio, month_year
@@ -159,7 +159,7 @@ queries = {
         FROM (
             SELECT 
                 severity,
-                TO_CHAR(sys_created_on, 'MM/YYYY') as month_year
+                TO_CHAR(created, 'MM/YYYY') as month_year
             FROM incident_data
         ) subquery
         GROUP BY severity, month_year
@@ -173,38 +173,38 @@ queries = {
         FROM (
             SELECT 
                 priority,
-                TO_CHAR(sys_created_on, 'MM/YYYY') as month_year
+                TO_CHAR(created, 'MM/YYYY') as month_year
             FROM incident_data
         ) subquery
         GROUP BY priority, month_year
         ORDER BY priority, TO_DATE(month_year, 'MM/YYYY')
     """,
     "enterprise": """
-        SELECT TO_CHAR(sys_created_on, 'MM/YYYY') as month_year, COUNT(*)
+        SELECT TO_CHAR(created, 'MM/YYYY') as month_year, COUNT(*)
         FROM incident_data
-        GROUP BY TO_CHAR(sys_created_on, 'MM/YYYY')
-        ORDER BY TO_DATE(TO_CHAR(sys_created_on, 'MM/YYYY'), 'MM/YYYY')
+        GROUP BY TO_CHAR(created, 'MM/YYYY')
+        ORDER BY TO_DATE(TO_CHAR(created, 'MM/YYYY'), 'MM/YYYY')
     """,
     "enterprise_caused_by": """
-        SELECT TO_CHAR(sys_created_on, 'MM/YYYY') as month_year, COUNT(*)
+        SELECT TO_CHAR(created, 'MM/YYYY') as month_year, COUNT(*)
         FROM incident_data
         WHERE caused_by IS NOT NULL AND caused_by <> ''
-        GROUP BY TO_CHAR(sys_created_on, 'MM/YYYY')
-        ORDER BY TO_DATE(TO_CHAR(sys_created_on, 'MM/YYYY'), 'MM/YYYY')
+        GROUP BY TO_CHAR(created, 'MM/YYYY')
+        ORDER BY TO_DATE(TO_CHAR(created, 'MM/YYYY'), 'MM/YYYY')
     """,
     "enterprise_mcis": """
-        SELECT TO_CHAR(sys_created_on, 'MM/YYYY') as month_year, COUNT(*)
+        SELECT TO_CHAR(created, 'MM/YYYY') as month_year, COUNT(*)
         FROM incident_data
         WHERE major_incident_state = 'accepted'
-        GROUP BY TO_CHAR(sys_created_on, 'MM/YYYY')
-        ORDER BY TO_DATE(TO_CHAR(sys_created_on, 'MM/YYYY'), 'MM/YYYY')
+        GROUP BY TO_CHAR(created, 'MM/YYYY')
+        ORDER BY TO_DATE(TO_CHAR(created, 'MM/YYYY'), 'MM/YYYY')
     """,
     "enterprise_problems": """
-        SELECT TO_CHAR(sys_created_on, 'MM/YYYY') as month_year, COUNT(*)
+        SELECT TO_CHAR(created, 'MM/YYYY') as month_year, COUNT(*)
         FROM incident_data
         WHERE problem_id IS NOT NULL AND caused_by <> ''
-        GROUP BY TO_CHAR(sys_created_on, 'MM/YYYY')
-        ORDER BY TO_DATE(TO_CHAR(sys_created_on, 'MM/YYYY'), 'MM/YYYY')
+        GROUP BY TO_CHAR(created, 'MM/YYYY')
+        ORDER BY TO_DATE(TO_CHAR(created, 'MM/YYYY'), 'MM/YYYY')
     """,
     "incidents_by_major_incident_state_by_portfolio": """
         SELECT 
@@ -216,7 +216,7 @@ queries = {
             SELECT 
                 portfolio,
                 major_incident_state,
-                TO_CHAR(sys_created_on, 'MM/YYYY') as month_year
+                TO_CHAR(created, 'MM/YYYY') as month_year
             FROM incident_data
             WHERE major_incident_state IS NOT NULL AND major_incident_state <> ''
         ) subquery
