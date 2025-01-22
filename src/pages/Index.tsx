@@ -118,15 +118,30 @@ const Index = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get response");
+        const errorData = await response.json().catch(() => ({}));
+        let errorMessage = "Failed to get response from OpenAI";
+        
+        if (response.status === 401) {
+          errorMessage = "Invalid API key. Please check your OpenAI API key and try again.";
+          // Clear the invalid API key
+          localStorage.removeItem("openai_api_key");
+          setIsKeySet(false);
+        } else if (response.status === 429) {
+          errorMessage = "Rate limit exceeded. Please try again in a few moments.";
+        } else if (errorData.error?.message) {
+          errorMessage = errorData.error.message;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
       setResponse(data.choices[0].message.content);
     } catch (error) {
+      console.error("OpenAI API Error:", error);
       toast({
         title: "Error",
-        description: "Failed to get response from OpenAI",
+        description: error instanceof Error ? error.message : "Failed to get response from OpenAI",
         variant: "destructive",
       });
     } finally {
