@@ -49,21 +49,18 @@ class DataProcessor:
         result = self.query_to_json(query)
         result = self.convert_decimal_to_float(result)
         
-        # Common structure for all table data
         table_entry = {
             "metadata": metadata,
             "data": result
         }
 
         if query_name.startswith("incidents_by_"):
-            # Extract the grouping key from the query name
             group_key = query_name.replace("incidents_by_", "")
             if "by_" in group_key:
-                # Handle nested grouping
                 keys = group_key.split("_by_")
                 table_entry["data"] = self.transform_to_nested_format(
                     result, 
-                    keys[-1],  # Use the last key as the grouping key
+                    keys[-1],
                     "month_year", 
                     "count"
                 )
@@ -91,7 +88,7 @@ class DataProcessor:
             
         return self.table_data
 
-# Define queries
+# Define all queries
 queries = {
     "total_incidents": "SELECT COUNT(*) FROM incident_data",
     "incidents_caused_by_change": "SELECT COUNT(*) FROM incident_data WHERE caused_by IS NOT NULL AND caused_by <> ''",
@@ -208,6 +205,23 @@ queries = {
         WHERE problem_id IS NOT NULL AND caused_by <> ''
         GROUP BY TO_CHAR(sys_created_on, 'MM/YYYY')
         ORDER BY TO_DATE(TO_CHAR(sys_created_on, 'MM/YYYY'), 'MM/YYYY')
+    """,
+    "incidents_by_major_incident_state_by_portfolio": """
+        SELECT 
+            portfolio,
+            major_incident_state,
+            month_year,
+            COUNT(*) as count
+        FROM (
+            SELECT 
+                portfolio,
+                major_incident_state,
+                TO_CHAR(sys_created_on, 'MM/YYYY') as month_year
+            FROM incident_data
+            WHERE major_incident_state IS NOT NULL AND major_incident_state <> ''
+        ) subquery
+        GROUP BY portfolio, major_incident_state, month_year
+        ORDER BY portfolio, major_incident_state, TO_DATE(month_year, 'MM/YYYY')
     """
 }
 
