@@ -1,69 +1,154 @@
-# Welcome to your Lovable project
+# AI Assistant Application
 
-## Project info
+## Overview
+This is a React-based AI Assistant application that interfaces with OpenAI's API to provide various AI-powered functionalities including general chat, email writing, translation, interview preparation, and text summarization.
 
-**URL**: https://lovable.dev/projects/45eaa669-3a7f-4854-838a-7e17798f65da
+## Features
+- Multiple AI assistance modes:
+  - General Chat
+  - Email Writing
+  - Translation
+  - Interview Preparation
+  - Text Summarization
+- File upload support for translation and summarization
+- Real-time API communication with OpenAI
+- Responsive design using Tailwind CSS
+- Error handling and user feedback
+- Secure API key management
 
-## How can I edit this code?
+## Project Structure
 
-There are several ways of editing your application.
+```
+src/
+├── components/
+│   ├── ApiKeyDialog.tsx     # Dialog for setting OpenAI API key
+│   ├── ChatInput.tsx        # User input component
+│   ├── ChatInterface.tsx    # Main chat interface logic
+│   ├── ChatResponse.tsx     # Response display component
+│   └── FileUpload.tsx       # File upload handling component
+├── utils/
+│   └── openai.ts           # OpenAI API communication utilities
+├── pages/
+│   └── Index.tsx           # Main page component
+├── App.tsx                 # Root application component
+└── main.tsx               # Application entry point
+```
 
-**Use Lovable**
+## Component Details
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/45eaa669-3a7f-4854-838a-7e17798f65da) and start prompting.
+### ApiKeyDialog.tsx
+Handles the secure storage of the OpenAI API key in localStorage and provides a dialog interface for users to input their API key.
 
-Changes made via Lovable will be committed automatically to this repo.
+```typescript
+// Key features:
+- Dialog interface for API key input
+- Secure storage in localStorage
+- User feedback via toast notifications
+```
 
-**Use your preferred IDE**
+### ChatInput.tsx
+Manages user input and message submission with loading states and validation.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```typescript
+// Key features:
+- Text input for user messages
+- Loading state handling
+- Submit button with status indication
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### ChatInterface.tsx
+Core component managing the chat interaction logic and API communication.
 
-Follow these steps:
+```typescript
+// Key features:
+- Mode-specific system prompts
+- Error handling
+- API communication
+- Response management
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### ChatResponse.tsx
+Displays the AI response in a formatted card layout.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```typescript
+// Key features:
+- Formatted response display
+- Whitespace preservation
+- Conditional rendering
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+### FileUpload.tsx
+Handles file uploads for translation and summarization modes.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```typescript
+// Key features:
+- File type validation
+- Text extraction
+- Error handling
+```
+
+## Setup and Running
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+4. Open your browser and navigate to `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Usage
 
-**Use GitHub Codespaces**
+1. Set your OpenAI API key using the "Set OpenAI API Key" button
+2. Select the desired mode from the dropdown menu
+3. For translation or summarization:
+   - Upload a text file if needed
+   - Or type/paste text directly
+4. Enter your message and click "Send Message"
+5. View the AI response in the card below
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Technical Stack
 
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
+- React 18
 - TypeScript
-- React
-- shadcn-ui
+- Vite
 - Tailwind CSS
+- shadcn/ui components
+- OpenAI API
+- React Query for API state management
 
-## How can I deploy this project?
+## Error Handling
 
-Simply open [Lovable](https://lovable.dev/projects/45eaa669-3a7f-4854-838a-7e17798f65da) and click on Share -> Publish.
+The application includes comprehensive error handling for:
+- Network issues
+- API key validation
+- Rate limiting
+- Timeout handling
+- File upload validation
 
-## I want to use a custom domain - is that possible?
+## Security Considerations
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+- API keys are stored in localStorage
+- File validation prevents unauthorized file types
+- Error messages are user-friendly without exposing sensitive information
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
